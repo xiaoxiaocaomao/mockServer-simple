@@ -21,16 +21,19 @@ API_DIR = _config.apiJson;
 // re-direct to remote server
 var reProxyMiddleware = function(req, res, next) {
 
-    // read configuration file
-    var config = fs.readFileSync(CONFIG_DIR, 'utf8');
-    var mockConfigObj = JSON.parse(config),
-        mockList = mockConfigObj.mock,
-        shouldMock = false;
+    var shouldMock = false;    
 
-    for (var i = 0, lenMockList = mockList.length; i < lenMockList; i++) {
-        if (req.originalUrl.indexOf(mockList[i]) > -1) {
-            shouldMock = true;
-            break;
+    if(CONFIG_DIR) {
+        // read configuration file
+        var config = fs.readFileSync(CONFIG_DIR, 'utf8');
+        var mockConfigObj = JSON.parse(config),
+            mockList = mockConfigObj.mock;
+
+        for (var i = 0, lenMockList = mockList.length; i < lenMockList; i++) {
+            if (req.originalUrl.indexOf(mockList[i]) > -1) {
+                shouldMock = true;
+                break;
+            }
         }
     }
 
@@ -59,7 +62,7 @@ var reProxyMiddleware = function(req, res, next) {
 };
 
 // only user this middleware at pointing proxy server
-if (PROXY_SERVER && CONFIG_DIR) {
+if (PROXY_SERVER) {
     server.use(reProxyMiddleware);
 }
 
