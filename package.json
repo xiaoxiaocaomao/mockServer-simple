@@ -1,0 +1,14 @@
+{
+    "name": "mocker-iclassedu",
+    "version": "0.0.3",
+    "description": "mock server at local",
+    "main": "index.js",
+    "author": "F.Zhu",
+    "readmeFilename": "README.md",
+    "license": "MIT",
+    "dependencies": {
+        "body-parser": "^1.15.1",
+        "express": "^4.13.4"
+    },
+    "devDependencies": {}
+}
