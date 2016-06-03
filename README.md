@@ -94,7 +94,7 @@ The apis which are included in "mock" should be responded by this local mock ser
     /// MOCK 
     var isMOCK = true;
 
-    var mockServer = require('mocker-iclassedu');
+    var mockServer = require('mockServer-simple');
     var MOCK_SERVER;
 
     gulp.task("mock", function() {
