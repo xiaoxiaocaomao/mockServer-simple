@@ -17,13 +17,13 @@ PORT = _config.port || PORT;
 PROXY_SERVER = _config.remote;
 CONFIG_DIR = _config.config;
 API_DIR = _config.apiJson;
+DATA_DIR = _config.dataFolder;
 
 // re-direct to remote server
 var reProxyMiddleware = function(req, res, next) {
+    var shouldMock = false;
 
-    var shouldMock = false;    
-
-    if(CONFIG_DIR) {
+    if (CONFIG_DIR) {
         // read configuration file
         var config = fs.readFileSync(CONFIG_DIR, 'utf8');
         var mockConfigObj = JSON.parse(config),
@@ -84,6 +84,7 @@ if (API_DIR) {
         var reqPiece = _apiRouter[i];
 
         (function(reqPiece) {
+            reqPiece = rectifyExpection(reqPiece);
             switch (reqPiece.method) {
                 case 'GET':
                     server.get(reqPiece.path, function(req, res) {
@@ -151,8 +152,24 @@ if (API_DIR) {
                 return true;
             }
 
+            /**
+             * @name rectifyExpection
+             * @description rectify expection data
+             * @param  {object} req
+             */
+            function rectifyExpection(req) {
+                // needs to be replaced
+                if (/^&file[\w\W]*&$/.test(req.expection)) {
+                    var regex = /^&file\[([\w\W]*)\]&$/;
+                    var m;
+                    m = regex.exec(req.expection);
+                    if (m) {
+                        req.expection = JSON.parse(fs.readFileSync(DATA_DIR + m[1]));
+                    }
+                }
+                return req;
+            }
         })(reqPiece);
-
     }
 }
 

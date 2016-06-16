@@ -9,14 +9,18 @@ var mockTask;
  */
 function launch(port) {
     // if existing process, then kill it (used for gulp watch)
-    if (mockTask) mockTask.kill();
+    if (mockTask) mockTask.kill('SIGINT');
+    
     // port configuration
     var config = JSON.parse(readConfig());
     config.port = port;
     writeConfig(JSON.stringify(config));
 
     // process
-    mockTask = spawn('node', [__dirname + '/mockServer.js'], {stdio: 'inherit'});
+    mockTask = spawn('node', [__dirname + '/mockServer.js'], {
+        killSignal: 'SIGINT'
+    });
+
     return 'http://localhost:' + port;
 }
 module.exports.launch = launch;
@@ -31,6 +35,7 @@ function setting(param) {
     config.apiJson = param.apiJson;
     config.config = param.config;
     config.remote = param.host;
+    config.dataFolder = param.dataFolder;
     writeConfig(JSON.stringify(config));
 }
 module.exports.setting = setting;
