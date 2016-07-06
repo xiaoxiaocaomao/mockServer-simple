@@ -8,7 +8,7 @@ var mockTask;
  * @param  {string} port
  */
 function launch(port) {
-    // if existing process, then kill it (used for gulp watch)
+    // if existing process, then kill it
     if (mockTask) mockTask.kill('SIGINT');
     
     // port configuration

@@ -47,7 +47,10 @@ To launch mock server and return service address.
 ## api.json
 To define how to respond a specific request, including path, method, param needed, expectation response. 
 
-Expection can be loaded from an external file, with format &file[xxxxxxxxx.json]&.
+- Expection can be loaded from an external file, with format &file[xxxxxxxxx.json]&.
+- If expection is an array, different PathParam will be returned with different result.
+  If specify the last element of the expection array, and set its param with UNDEFINED, that will be seemed as the DEFAULT value.
+  If do not specify the DEFAULT value, this request will return code 404.
 
 Current support POST,PUT,GET.
 
@@ -71,6 +74,30 @@ Current support POST,PUT,GET.
             "param2": "value2"
         },
         "expection": "&file[data1.json]&"
+    },{        
+        "path": "/lalala/:pathParam1/:pathParam2",
+        "method": "GET",
+        "param": {
+        },
+        "expection": [
+            {
+                "param": {
+                    "pathParam1": "1",
+                    "pathParam2": "1"
+                },
+                "expection": "&file[a1.json]&"
+            },
+            {
+                "param": {
+                    "pathParam1": "2",
+                    "pathParam2": "2"
+                },
+                "expection": "&file[a2.json]&"
+            },
+            {            
+                "expection": "&file[a1.json]&"
+            }
+        ]
     }]
 ```
 
@@ -80,8 +107,9 @@ The apis which are included in "mock" should be responded by this local mock ser
 ```
     {
         "mock": [
-            "/rest/access/userInfo",
-            "/rest/access/login"
+            "/lalala",
+            "/sss/xxx1",
+            "/sss/xxx"
         ]
     }
 ```

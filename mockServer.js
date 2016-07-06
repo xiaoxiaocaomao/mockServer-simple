@@ -84,39 +84,44 @@ if (API_DIR) {
         var reqPiece = _apiRouter[i];
 
         (function(reqPiece) {
-            reqPiece = rectifyExpection(reqPiece);
             switch (reqPiece.method) {
                 case 'GET':
                     server.get(reqPiece.path, function(req, res) {
-                        _response(req.query, res);
+                        _response(req, req.query, res);
                     });
                     break;
                 case 'POST':
                     server.post(reqPiece.path, function(req, res) {
-                        _response(req.body, res);
+                        _response(req, req.body, res);
                     });
                     break;
                 case 'PUT':
                     server.put(reqPiece.path, function(req, res) {
-                        _response(req.body, res);
+                        _response(req, req.body, res);
                     });
                     break;
                 default:
                     server.get(reqPiece.path, function(req, res) {
-                        _response(req.query, res);
+                        _response(req, req.query, res);
                     });
             }
 
             /**
              * _response
              * @description response action
+             * @param  {object} req
              * @param  {object} param request parameters
              * @param  {object} res
              */
-            function _response(param, res) {
+            function _response(req, param, res) {
                 // check parameters
                 if (checkParam(param, reqPiece.param)) {
-                    res.send(reqPiece.expection);
+                    var _d = rectifyExpection(req);
+                    if(_d === 404) {
+                        res.status(404).send('Api Not Found');
+                    } else {
+                        res.send(_d);
+                    }                    
                 } else {
                     res.send('error!');
                 }
@@ -158,16 +163,44 @@ if (API_DIR) {
              * @param  {object} req
              */
             function rectifyExpection(req) {
-                // needs to be replaced
-                if (/^&file[\w\W]*&$/.test(req.expection)) {
-                    var regex = /^&file\[([\w\W]*)\]&$/;
-                    var m;
-                    m = regex.exec(req.expection);
-                    if (m) {
-                        req.expection = JSON.parse(fs.readFileSync(DATA_DIR + m[1]));
+                if (Object.prototype.toString.call(reqPiece.expection) === '[object Array]') {
+                    return locateExpection();
+                }
+
+                function locateExpection() {
+                    var lenExpections = reqPiece.expection.length;
+                    var receivedParam = {};
+                    var paramsArray = req.params;
+
+                    for (var i = 0; i < lenExpections; i++) {
+                        if (reqPiece.expection[i].param && checkParam(reqPiece.expection[i].param, paramsArray)) {
+                            // needs to be replaced
+                            return _replace(reqPiece.expection[i]);
+                        } else if (i === lenExpections - 1) {
+                            // whether the last one is DEFAULT
+                            if (!reqPiece.expection[i].param) {
+                                return _replace(reqPiece.expection[i]);
+                            } else {
+                                // return 404
+                                return 404;
+                            }
+                        }
+                    }
+
+                }
+
+                function _replace(target) {
+                    if (/^&file[\w\W]*&$/.test(target.expection)) {
+                        var regex = /^&file\[([\w\W]*)\]&$/;
+                        var m;
+                        m = regex.exec(target.expection);
+                        if (m) {
+                            return JSON.parse(fs.readFileSync(DATA_DIR + m[1]));
+                        }
+                    } else {
+                        return target.expection;
                     }
                 }
-                return req;
             }
         })(reqPiece);
     }
